@@ -53,120 +53,111 @@ getHtml()
         const $bodyList = $("div.row div.row.blog-list").children("article");
 
         $bodyList.each(function(i, elem) {
+            let date = $(this).find('div.blog-details span').text().substr(0, $(this).find('div.blog-details span').text().length-10);
+            date = new Date(date);
+            
             ulList[i] = {
-                url: $(this).find('div.blog-top a').attr('href'),
-                id: url.parse($(this).find('div.blog-top a').attr('href')).query.slice(2),
+                "url": $(this).find('div.blog-top a').attr('href'),
+                "date": date,
+                // id: url.parse($(this).find('div.blog-top a').attr('href')).query.slice(2),
             };
+            
     });
-    
-    const liData = ulList.filter(n => 6005);
+    let wk_ago= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const liData = ulList.filter(n => n.date>wk_ago);
     return liData;
     
 })
 .then(liData=>{log(liData)})
-.then(liData => {
-    log(liData)
-    if(liData.length<4){
-        for(let i=0; i<liData.length; i++){
-            try{
-                let getHtml2 = async () => {
-                    try {
-                        return await axios.get(`${liData[i].url}`);
-                    } catch (error) {
-                        console.error(error);
-                    }
-                };
-                getHtml2()
-                .then(html => {
-                    const $ = cheerio.load(html.data);
-                    const new_data = $('article').html();
-                    return new_data;
-                })
-                .then(new_data => {
-                    transporter.sendMail({
-                        from: secret.myID+"@naver.com" , // sender address
-                        to: "nyyni@naver.com", // list of receivers
-                        subject: `에시공 새글 알림(${i})`, // Subject line
-                        html: new_data
-                        });
-                    });
+// .then(liData => {
+//     log(liData)
+//     if(liData.length<4){
+//         for(let i=0; i<liData.length; i++){
+//             try{
+//                 let getHtml2 = async () => {
+//                     try {
+//                         return await axios.get(`${liData[i].url}`);
+//                     } catch (error) {
+//                         console.error(error);
+//                     }
+//                 };
+//                 getHtml2()
+//                 .then(html => {
+//                     const $ = cheerio.load(html.data);
+//                     const new_data = $('article').html();
+//                     return new_data;
+//                 })
+//                 .then(new_data => {
+//                     transporter.sendMail({
+//                         from: secret.myID+"@naver.com" , // sender address
+//                         to: "nyyni@naver.com", // list of receivers
+//                         subject: `에시공 새글 알림(${i})`, // Subject line
+//                         html: new_data
+//                         });
+//                     });
                 
-            }catch(err){
-                console.error(error);
-            }
-        }
-    } else {
-        for(let i=0; i<3; i++){
-            try{
-                let getHtml2 = async () => {
-                    try {
-                        return await axios.get(`${liData[i].url}`);
-                    } catch (error) {
-                        console.error(error);
-                    }
-                };
-                getHtml2()
-                .then(html => {
-                    const $ = cheerio.load(html.data);
-                    const new_data = $('article').html();
-                    return new_data;
-                })
-                .then(new_data => {
-                    transporter.sendMail({
-                        from: secret.myID+"@naver.com" , // sender address
-                        to: "nyyni@naver.com", // list of receivers
-                        subject: `에시공 새글 알림(${i})`, // Subject line
-                        html: new_data
-                        });
-                    });
+//             }catch(err){
+//                 console.error(error);
+//             }
+//         }
+//     } else {
+//         for(let i=0; i<3; i++){
+//             try{
+//                 let getHtml2 = async () => {
+//                     try {
+//                         return await axios.get(`${liData[i].url}`);
+//                     } catch (error) {
+//                         console.error(error);
+//                     }
+//                 };
+//                 getHtml2()
+//                 .then(html => {
+//                     const $ = cheerio.load(html.data);
+//                     const new_data = $('article').html();
+//                     return new_data;
+//                 })
+//                 .then(new_data => {
+//                     transporter.sendMail({
+//                         from: secret.myID+"@naver.com" , // sender address
+//                         to: "nyyni@naver.com", // list of receivers
+//                         subject: `에시공 새글 알림(${i})`, // Subject line
+//                         html: new_data
+//                         });
+//                     });
                 
-            }catch(err){
-                console.error(error);
-            }
-        }
-        for(let i=3; i<liData.length; i++){
-            try{
-                let getHtml = async () => {
-                    try {
-                        return await axios.get(`${liData[i].url}`);
-                    } catch (error) {
-                        console.error(error);
-                    }
-                };
-                getHtml()
-                .then(html => {
-                    const $ = cheerio.load(html.data);
-                    const new_data = $('article').html();
-                    return new_data;
-                })
-                .then(new_data => {
-                    transporter.sendMail({
-                        from: secret.myID+"@naver.com", // sender address
-                        to: "nyyni@naver.com", // list of receivers
-                        subject: `에시공 새글 알림(${i})`, // Subject line
-                        html: new_data
-                        });
-                    });
+//             }catch(err){
+//                 console.error(error);
+//             }
+//         }
+//         for(let i=3; i<liData.length; i++){
+//             try{
+//                 let getHtml = async () => {
+//                     try {
+//                         return await axios.get(`${liData[i].url}`);
+//                     } catch (error) {
+//                         console.error(error);
+//                     }
+//                 };
+//                 getHtml()
+//                 .then(html => {
+//                     const $ = cheerio.load(html.data);
+//                     const new_data = $('article').html();
+//                     return new_data;
+//                 })
+//                 .then(new_data => {
+//                     transporter.sendMail({
+//                         from: secret.myID+"@naver.com", // sender address
+//                         to: "nyyni@naver.com", // list of receivers
+//                         subject: `에시공 새글 알림(${i})`, // Subject line
+//                         html: new_data
+//                         });
+//                     });
                 
-            }catch(err){
-                console.error(error);
-            }
-        }
-    }
+//             }catch(err){
+//                 console.error(error);
+//             }
+//         }
+//     }
 
-});
+// });
 
-
-//mailer
-
-Generate test SMTP service account from ethereal.email
-Only needed if you don't have a real mail account for testing
-
-create reusable transporter object using the default SMTP transport
-
-
-
-
-
-
-app.listen(3000);
