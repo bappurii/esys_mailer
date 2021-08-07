@@ -25,10 +25,19 @@ const cn = mysql.createConnection({
 //nodemailer
 const nodemailer = require("nodemailer");
 const secret = require('./secret')
-
+let transporter = nodemailer.createTransport({
+    host: "smtp.naver.com",
+    port:465,
+    secure: true, // true for 465, false for other ports
+    pool: true,
+    auth: {
+    user: secret.myID, // generated ethereal user
+    pass: secret.myPW, // generated ethereal password
+    },
+});
 
 //crawling
-const getHtml1 = async () => {
+const getHtml = async () => {
     try {
         return await axios.get("http://ese.cau.ac.kr/wordpress/?page_id=226");
     } catch (error) {
@@ -37,7 +46,7 @@ const getHtml1 = async () => {
 };
 
 
-getHtml1()
+getHtml()
     .then(html => {
         let ulList = [];
         const $ = cheerio.load(html.data);
@@ -45,67 +54,119 @@ getHtml1()
 
         $bodyList.each(function(i, elem) {
             ulList[i] = {
-                title: $(this).find('div.blog-top a.blog-title').text().trim(),
                 url: $(this).find('div.blog-top a').attr('href'),
-                summary: $(this).find('div.blog-content').text().trim(),
-                date: $(this).find('div.blog-details span').text().substr(0, $(this).find('div.blog-details span').text().length-10),
                 id: url.parse($(this).find('div.blog-top a').attr('href')).query.slice(2),
             };
     });
-
-    const data = ulList.filter(n => n.title);
-    return data;
+    
+    const liData = ulList.filter(n => 6005);
+    return liData;
+    
 })
-.then(result => {
-    log(result)
+.then(liData=>{log(liData)})
+.then(liData => {
+    log(liData)
+    if(liData.length<4){
+        for(let i=0; i<liData.length; i++){
+            try{
+                let getHtml2 = async () => {
+                    try {
+                        return await axios.get(`${liData[i].url}`);
+                    } catch (error) {
+                        console.error(error);
+                    }
+                };
+                getHtml2()
+                .then(html => {
+                    const $ = cheerio.load(html.data);
+                    const new_data = $('article').html();
+                    return new_data;
+                })
+                .then(new_data => {
+                    transporter.sendMail({
+                        from: secret.myID+"@naver.com" , // sender address
+                        to: "nyyni@naver.com", // list of receivers
+                        subject: `에시공 새글 알림(${i})`, // Subject line
+                        html: new_data
+                        });
+                    });
+                
+            }catch(err){
+                console.error(error);
+            }
+        }
+    } else {
+        for(let i=0; i<3; i++){
+            try{
+                let getHtml2 = async () => {
+                    try {
+                        return await axios.get(`${liData[i].url}`);
+                    } catch (error) {
+                        console.error(error);
+                    }
+                };
+                getHtml2()
+                .then(html => {
+                    const $ = cheerio.load(html.data);
+                    const new_data = $('article').html();
+                    return new_data;
+                })
+                .then(new_data => {
+                    transporter.sendMail({
+                        from: secret.myID+"@naver.com" , // sender address
+                        to: "nyyni@naver.com", // list of receivers
+                        subject: `에시공 새글 알림(${i})`, // Subject line
+                        html: new_data
+                        });
+                    });
+                
+            }catch(err){
+                console.error(error);
+            }
+        }
+        for(let i=3; i<liData.length; i++){
+            try{
+                let getHtml = async () => {
+                    try {
+                        return await axios.get(`${liData[i].url}`);
+                    } catch (error) {
+                        console.error(error);
+                    }
+                };
+                getHtml()
+                .then(html => {
+                    const $ = cheerio.load(html.data);
+                    const new_data = $('article').html();
+                    return new_data;
+                })
+                .then(new_data => {
+                    transporter.sendMail({
+                        from: secret.myID+"@naver.com", // sender address
+                        to: "nyyni@naver.com", // list of receivers
+                        subject: `에시공 새글 알림(${i})`, // Subject line
+                        html: new_data
+                        });
+                    });
+                
+            }catch(err){
+                console.error(error);
+            }
+        }
+    }
+
 });
 
 
 //mailer
-async function main() {
-    // Generate test SMTP service account from ethereal.email
-    // Only needed if you don't have a real mail account for testing
 
-    // create reusable transporter object using the default SMTP transport
-    let transporter = nodemailer.createTransport({
-        host: "smtp.naver.com",
-        
-        secure: true, // true for 465, false for other ports
-        auth: {
-        user: secret.myEM, // generated ethereal user
-        pass: secret.myPW, // generated ethereal password
-        },
-    });
-    const getHtml2 = async () => {
-            try {
-                return await axios.get("http://ese.cau.ac.kr/wordpress/?p=6022");
-            } catch (error) {
-                console.error(error);
-            }
-        };
-    getHtml2()
-    .then(html => {
-        const $ = cheerio.load(html.data);
-        const data = $('article').html();
-        return data;
-})
-.then(data => {
-    transporter.sendMail({
-        from: secret.myEM, // sender address
-        to: "nyyni@naver.com", // list of receivers
-        subject: "에시공 새글 알림", // Subject line
-        html: data
-        
-        });
-});
+Generate test SMTP service account from ethereal.email
+Only needed if you don't have a real mail account for testing
 
-    // // send mail with defined transport object
-    
-    // 
+create reusable transporter object using the default SMTP transport
 
-}
 
-main().catch(console.error);
+
+
 
 
 app.listen(3000);
