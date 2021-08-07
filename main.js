@@ -1,11 +1,4 @@
 //Module
-// //express module
-// const express = require('express');
-// const app = express();
-// const logger = require('morgan');
-// app.use(logger('dev', {}));
-// app.use(express.json()); 
-// app.use(express.urlencoded( {extended : false } ));
 
 //crawling module
 const axios = require("axios");
