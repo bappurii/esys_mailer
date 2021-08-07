@@ -27,38 +27,38 @@ const nodemailer = require("nodemailer");
 const secret = require('./secret')
 
 
-// //crawling
-// const getHtml = async () => {
-//     try {
-//         return await axios.get("http://ese.cau.ac.kr/wordpress/?page_id=226");
-//     } catch (error) {
-//         console.error(error);
-//     }
-// };
+//crawling
+const getHtml1 = async () => {
+    try {
+        return await axios.get("http://ese.cau.ac.kr/wordpress/?page_id=226");
+    } catch (error) {
+        console.error(error);
+    }
+};
 
 
-// getHtml()
-//     .then(html => {
-//         let ulList = [];
-//         const $ = cheerio.load(html.data);
-//         const $bodyList = $("div.row div.row.blog-list").children("article");
+getHtml1()
+    .then(html => {
+        let ulList = [];
+        const $ = cheerio.load(html.data);
+        const $bodyList = $("div.row div.row.blog-list").children("article");
 
-//         $bodyList.each(function(i, elem) {
-//             ulList[i] = {
-//                 title: $(this).find('div.blog-top a.blog-title').text().trim(),
-//                 url: $(this).find('div.blog-top a').attr('href'),
-//                 summary: $(this).find('div.blog-content').text().trim(),
-//                 date: $(this).find('div.blog-details span').text().substr(0, $(this).find('div.blog-details span').text().length-10),
-//                 id: url.parse($(this).find('div.blog-top a').attr('href')).query.slice(2),
-//             };
-//     });
+        $bodyList.each(function(i, elem) {
+            ulList[i] = {
+                title: $(this).find('div.blog-top a.blog-title').text().trim(),
+                url: $(this).find('div.blog-top a').attr('href'),
+                summary: $(this).find('div.blog-content').text().trim(),
+                date: $(this).find('div.blog-details span').text().substr(0, $(this).find('div.blog-details span').text().length-10),
+                id: url.parse($(this).find('div.blog-top a').attr('href')).query.slice(2),
+            };
+    });
 
-//     const data = ulList.filter(n => n.title);
-//     return data;
-// })
-// .then(result => {
-//     log(result)
-// });
+    const data = ulList.filter(n => n.title);
+    return data;
+})
+.then(result => {
+    log(result)
+});
 
 
 //mailer
@@ -76,23 +76,33 @@ async function main() {
         pass: secret.myPW, // generated ethereal password
         },
     });
+    const getHtml2 = async () => {
+            try {
+                return await axios.get("http://ese.cau.ac.kr/wordpress/?p=6022");
+            } catch (error) {
+                console.error(error);
+            }
+        };
+    getHtml2()
+    .then(html => {
+        const $ = cheerio.load(html.data);
+        const data = $('article').html();
+        return data;
+})
+.then(data => {
+    transporter.sendMail({
+        from: secret.myEM, // sender address
+        to: "nyyni@naver.com", // list of receivers
+        subject: "에시공 새글 알림", // Subject line
+        html: data
+        
+        });
+});
 
-    // send mail with defined transport object
+    // // send mail with defined transport object
     
-    let info = await transporter.sendMail({
-      from: secret.myEM, // sender address
-      to: "nyyni@naver.com", // list of receivers
-      subject: "Hello ✔", // Subject line
-      text: "Hello world?dsfasefsaefd", // plain text body
-    //   html: "<b>Hello world? haha</b>", // html body
-    });
+    // 
 
-    console.log("Message sent: %s", info.messageId);
-    // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-
-    // Preview only available when sending through an Ethereal account
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-    // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
 }
 
 main().catch(console.error);
