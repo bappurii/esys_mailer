@@ -1,11 +1,11 @@
 //Module
-//express module
-const express = require('express');
-const app = express();
-const logger = require('morgan');
-app.use(logger('dev', {}));
-app.use(express.json()); 
-app.use(express.urlencoded( {extended : false } ));
+// //express module
+// const express = require('express');
+// const app = express();
+// const logger = require('morgan');
+// app.use(logger('dev', {}));
+// app.use(express.json()); 
+// app.use(express.urlencoded( {extended : false } ));
 
 //crawling module
 const axios = require("axios");
@@ -69,32 +69,34 @@ getHtml()
     
 })
 .then(liData => {
-        for(let i=0; i<liData.length; i++){
-            try{
-                let getHtml2 = async () => {
-                    try {
-                        return await axios.get(`${liData[i].url}`);
-                    } catch (error) {
-                        console.error(error);
-                    }
-                };
-                getHtml2()
-                .then(html => {
-                    const $ = cheerio.load(html.data);
-                    const new_data = $('article').html();
-                    return new_data;
-                })
-                .then(new_data => {
-                    transporter.sendMail({
-                        from: secret.myID+"@naver.com" , // sender address
-                        to: "nyyni@naver.com", // list of receivers
-                        subject: `에시공 새글 알림(${i+1})`, // Subject line
-                        html: new_data
+        if(liData){
+            for(let i=0; i<liData.length; i++){
+                try{
+                    let getHtml2 = async () => {
+                        try {
+                            return await axios.get(`${liData[i].url}`);
+                        } catch (error) {
+                            console.error(error);
+                        }
+                    };
+                    getHtml2()
+                    .then(html => {
+                        const $ = cheerio.load(html.data);
+                        const new_data = $('article').html();
+                        return new_data;
+                    })
+                    .then(new_data => {
+                        transporter.sendMail({
+                            from: secret.myID+"@naver.com" , // sender address
+                            to: "nyyni@naver.com", // list of receivers
+                            subject: `에시공 새글 알림(${i+1})`, // Subject line
+                            html: new_data
+                            });
                         });
-                    });
-                    
-            }catch(err){
-                console.error(error);
+                        
+                }catch(err){
+                    console.error(error);
+                }
             }
         }
 })
