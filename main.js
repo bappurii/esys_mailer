@@ -30,6 +30,7 @@ let transporter = nodemailer.createTransport({
     port:465,
     secure: true, // true for 465, false for other ports
     pool: true,
+    maxConnections: 1,
     auth: {
     user: secret.myID, // generated ethereal user
     pass: secret.myPW, // generated ethereal password
@@ -59,7 +60,6 @@ getHtml()
             ulList[i] = {
                 "url": $(this).find('div.blog-top a').attr('href'),
                 "date": date,
-                // id: url.parse($(this).find('div.blog-top a').attr('href')).query.slice(2),
             };
             
     });
@@ -68,96 +68,35 @@ getHtml()
     return liData;
     
 })
-.then(liData=>{log(liData)})
-// .then(liData => {
-//     log(liData)
-//     if(liData.length<4){
-//         for(let i=0; i<liData.length; i++){
-//             try{
-//                 let getHtml2 = async () => {
-//                     try {
-//                         return await axios.get(`${liData[i].url}`);
-//                     } catch (error) {
-//                         console.error(error);
-//                     }
-//                 };
-//                 getHtml2()
-//                 .then(html => {
-//                     const $ = cheerio.load(html.data);
-//                     const new_data = $('article').html();
-//                     return new_data;
-//                 })
-//                 .then(new_data => {
-//                     transporter.sendMail({
-//                         from: secret.myID+"@naver.com" , // sender address
-//                         to: "nyyni@naver.com", // list of receivers
-//                         subject: `에시공 새글 알림(${i})`, // Subject line
-//                         html: new_data
-//                         });
-//                     });
-                
-//             }catch(err){
-//                 console.error(error);
-//             }
-//         }
-//     } else {
-//         for(let i=0; i<3; i++){
-//             try{
-//                 let getHtml2 = async () => {
-//                     try {
-//                         return await axios.get(`${liData[i].url}`);
-//                     } catch (error) {
-//                         console.error(error);
-//                     }
-//                 };
-//                 getHtml2()
-//                 .then(html => {
-//                     const $ = cheerio.load(html.data);
-//                     const new_data = $('article').html();
-//                     return new_data;
-//                 })
-//                 .then(new_data => {
-//                     transporter.sendMail({
-//                         from: secret.myID+"@naver.com" , // sender address
-//                         to: "nyyni@naver.com", // list of receivers
-//                         subject: `에시공 새글 알림(${i})`, // Subject line
-//                         html: new_data
-//                         });
-//                     });
-                
-//             }catch(err){
-//                 console.error(error);
-//             }
-//         }
-//         for(let i=3; i<liData.length; i++){
-//             try{
-//                 let getHtml = async () => {
-//                     try {
-//                         return await axios.get(`${liData[i].url}`);
-//                     } catch (error) {
-//                         console.error(error);
-//                     }
-//                 };
-//                 getHtml()
-//                 .then(html => {
-//                     const $ = cheerio.load(html.data);
-//                     const new_data = $('article').html();
-//                     return new_data;
-//                 })
-//                 .then(new_data => {
-//                     transporter.sendMail({
-//                         from: secret.myID+"@naver.com", // sender address
-//                         to: "nyyni@naver.com", // list of receivers
-//                         subject: `에시공 새글 알림(${i})`, // Subject line
-//                         html: new_data
-//                         });
-//                     });
-                
-//             }catch(err){
-//                 console.error(error);
-//             }
-//         }
-//     }
+.then(liData => {
+        for(let i=0; i<liData.length; i++){
+            try{
+                let getHtml2 = async () => {
+                    try {
+                        return await axios.get(`${liData[i].url}`);
+                    } catch (error) {
+                        console.error(error);
+                    }
+                };
+                getHtml2()
+                .then(html => {
+                    const $ = cheerio.load(html.data);
+                    const new_data = $('article').html();
+                    return new_data;
+                })
+                .then(new_data => {
+                    transporter.sendMail({
+                        from: secret.myID+"@naver.com" , // sender address
+                        to: "nyyni@naver.com", // list of receivers
+                        subject: `에시공 새글 알림(${i+1})`, // Subject line
+                        html: new_data
+                        });
+                    });
+                    
+            }catch(err){
+                console.error(error);
+            }
+        }
+})
 
-// });
 
