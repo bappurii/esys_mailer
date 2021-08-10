@@ -47,27 +47,29 @@ getHtml()
         const $bodyList = $("div.row div.row.blog-list").children("article");
 
         $bodyList.each(function(i, elem) {
-            let date = $(this).find('div.blog-details span').text().substr(0, $(this).find('div.blog-details span').text().length-10);
-            date = new Date(date);
-            
             ulList[i] = {
+                "title": $(this).find('div.blog-top a.blog-title').text().trim(),
                 "url": $(this).find('div.blog-top a').attr('href'),
-                "date": date,
+                "id": url.parse($(this).find('div.blog-top a').attr('href')).query.slice(2),
             };
-            
     });
-    let wk_ago= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const liData = ulList.filter(n => n.date>wk_ago);
-    return liData;
-    
-})
-.then(liData => {
-        if(liData){
-            for(let i=0; i<liData.length; i++){
+    return ulList;
+    })
+.then(ulList => {
+    let filtered=[];
+    cn.query(`select ud.id from ud`, (err, result)=>{
+        if (err) console.log(err);
+        for (let ele in ulList){
+            if (ulList[ele].id>result[0].id){
+                filtered.push(ulList[ele])
+            }
+        }
+        if (filtered){
+            filtered.forEach(element => {
                 try{
                     let getHtml2 = async () => {
                         try {
-                            return await axios.get(`${liData[i].url}`);
+                            return await axios.get(`${element.url}`);
                         } catch (error) {
                             console.error(error);
                         }
@@ -75,23 +77,26 @@ getHtml()
                     getHtml2()
                     .then(html => {
                         const $ = cheerio.load(html.data);
-                        const new_data = $('article').html();
-                        return new_data;
+
+                        let new_data= $('article').html();
+                        let mailData= [element.title,new_data];
+                        return mailData;
                     })
-                    .then(new_data => {
+                    .then(mailData => {
                         transporter.sendMail({
                             from: secret.myID+"@naver.com" , // sender address
                             to: "nyyni@naver.com", // list of receivers
-                            subject: `에시공 새글 알림(${i+1})`, // Subject line
-                            html: new_data
-                            });
+                            subject: mailData[0], // Subject line
+                            html: mailData[1]
                         });
-                        
+                    });
+                    
                 }catch(err){
                     console.error(error);
                 }
-            }
+            });
         }
+    })
 })
 
 
