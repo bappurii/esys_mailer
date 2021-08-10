@@ -35,28 +35,30 @@ const getHtml = async () => {
     try {
         return await axios.get("http://ese.cau.ac.kr/wordpress/?page_id=226");
     } catch (error) {
-        console.error(error);
+        console.log(error);
     }
 };
 
 
 getHtml()
-    .then(html => {
-        let ulList = [];
-        const $ = cheerio.load(html.data);
-        const $bodyList = $("div.row div.row.blog-list").children("article");
+.then(html => {
+    let ulList = [];
+    const $ = cheerio.load(html.data);
+    const $bodyList = $("div.row div.row.blog-list").children("article");
 
-        $bodyList.each(function(i, elem) {
-            ulList[i] = {
-                "title": $(this).find('div.blog-top a.blog-title').text().trim(),
-                "url": $(this).find('div.blog-top a').attr('href'),
-                "id": url.parse($(this).find('div.blog-top a').attr('href')).query.slice(2),
-            };
+    $bodyList.each(function(i, elem) {
+        ulList[i] = {
+            "title": $(this).find('div.blog-top a.blog-title').text().trim(),
+            "url": $(this).find('div.blog-top a').attr('href'),
+            "id": url.parse($(this).find('div.blog-top a').attr('href')).query.slice(2),
+        };
     });
     return ulList;
-    })
+})
 .then(ulList => {
     let filtered=[];
+
+
     cn.query(`select ud.id from ud`, (err, result)=>{
         if (err) console.log(err);
         for (let ele in ulList){
@@ -67,11 +69,12 @@ getHtml()
         if (filtered){
             filtered.forEach(element => {
                 try{
+                    
                     let getHtml2 = async () => {
                         try {
                             return await axios.get(`${element.url}`);
                         } catch (error) {
-                            console.error(error);
+                            console.log(error);
                         }
                     };
                     getHtml2()
@@ -92,11 +95,15 @@ getHtml()
                     });
                     
                 }catch(err){
-                    console.error(error);
+                    console.log(err);
                 }
             });
+            cn.query(`update ud set id="${filtered[0].id}";`)
         }
     })
 })
 
-
+// const max = filtered.reduce(function(prev, current) {
+//     return (prev.id > current.id) ? prev.id : current.id
+// })
+// console.log(max);
